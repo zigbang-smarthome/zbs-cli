@@ -1,0 +1,36 @@
+class ZbsCli < Formula
+  desc "CLI for zbs.zigbang.in (직방 본사 B2B 포털)"
+  homepage "https://github.com/zigbang-smarthome/zbs-cli"
+  version "VERSION_PLACEHOLDER"
+  license "MIT"
+
+  on_macos do
+    on_arm do
+      url "https://github.com/zigbang-smarthome/zbs-cli/releases/download/v#{version}/zbs-darwin-arm64.tar.gz"
+      sha256 "SHA_DARWIN_ARM64"
+    end
+    on_intel do
+      url "https://github.com/zigbang-smarthome/zbs-cli/releases/download/v#{version}/zbs-darwin-x64.tar.gz"
+      sha256 "SHA_DARWIN_X64"
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url "https://github.com/zigbang-smarthome/zbs-cli/releases/download/v#{version}/zbs-linux-arm64.tar.gz"
+      sha256 "SHA_LINUX_ARM64"
+    end
+    on_intel do
+      url "https://github.com/zigbang-smarthome/zbs-cli/releases/download/v#{version}/zbs-linux-x64.tar.gz"
+      sha256 "SHA_LINUX_X64"
+    end
+  end
+
+  def install
+    bin.install "zbs"
+  end
+
+  test do
+    system "#{bin}/zbs", "--help"
+  end
+end

@@ -1,0 +1,32 @@
+{
+  "name": "@zigbang-smarthome/zbs-cli",
+  "description": "CLI for zbs.zigbang.in (직방 본사 B2B 포털 — IDP/HMS VOC, 게시판, 자재, 통계)",
+  "module": "src/index.ts",
+  "type": "module",
+  "bin": {
+    "zbs": "bin/zbs.mjs"
+  },
+  "files": [
+    "bin"
+  ],
+  "scripts": {
+    "postinstall": "node bin/install.js",
+    "dev": "bun run src/index.ts",
+    "build": "bun build --compile --outfile=dist/zbs src/index.ts",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "citty": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zigbang-smarthome/zbs-cli.git"
+  }
+}
