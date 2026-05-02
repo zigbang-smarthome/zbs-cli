@@ -8,6 +8,7 @@ import { dashboardCommand } from "./commands/dashboard.ts";
 import { codesCommand } from "./commands/codes.ts";
 import { menuCommand } from "./commands/menu.ts";
 import { callCommand } from "./commands/call.ts";
+import { checkForUpdate } from "./lib/update-check.ts";
 
 const main = defineCommand({
   meta: {
@@ -27,4 +28,5 @@ const main = defineCommand({
   },
 });
 
+await checkForUpdate();
 runMain(main);
