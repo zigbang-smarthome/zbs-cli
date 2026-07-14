@@ -6,7 +6,8 @@ import { fileURLToPath } from "url";
 import path from "path";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const bin = path.join(__dirname, "native", "zbs");
+const binName = process.platform === "win32" ? "zbs.exe" : "zbs";
+const bin = path.join(__dirname, "native", binName);
 
 if (!existsSync(bin)) {
   await import("./install.js");

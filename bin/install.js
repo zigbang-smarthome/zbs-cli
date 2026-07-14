@@ -1,7 +1,7 @@
 import https from "https";
 import fs from "fs";
 import path from "path";
-import { execSync } from "child_process";
+import { spawnSync } from "child_process";
 import { fileURLToPath } from "url";
 import { createRequire } from "module";
 
@@ -11,10 +11,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = "zigbang-smarthome/zbs-cli";
 
 const PLATFORMS = {
-  "darwin-x64": { artifact: "zbs-darwin-x64", ext: ".tar.gz" },
-  "darwin-arm64": { artifact: "zbs-darwin-arm64", ext: ".tar.gz" },
-  "linux-x64": { artifact: "zbs-linux-x64", ext: ".tar.gz" },
-  "linux-arm64": { artifact: "zbs-linux-arm64", ext: ".tar.gz" },
+  "darwin-x64":   { artifact: "zbs-darwin-x64",   ext: ".tar.gz", bin: "zbs" },
+  "darwin-arm64": { artifact: "zbs-darwin-arm64", ext: ".tar.gz", bin: "zbs" },
+  "linux-x64":    { artifact: "zbs-linux-x64",    ext: ".tar.gz", bin: "zbs" },
+  "linux-arm64":  { artifact: "zbs-linux-arm64",  ext: ".tar.gz", bin: "zbs" },
+  "win32-x64":    { artifact: "zbs-win32-x64",    ext: ".zip",    bin: "zbs.exe" },
 };
 
 function download(url) {
@@ -32,21 +33,35 @@ function download(url) {
   });
 }
 
+function extract(archivePath, ext, cwd) {
+  if (ext === ".zip") {
+    const res = spawnSync(
+      "powershell.exe",
+      ["-NoProfile", "-Command", `Expand-Archive -LiteralPath "${archivePath}" -DestinationPath "${cwd}" -Force`],
+      { stdio: "ignore" },
+    );
+    if (res.status !== 0) throw new Error(`Expand-Archive failed with status ${res.status}`);
+    return;
+  }
+  const res = spawnSync("tar", ["xzf", archivePath], { cwd, stdio: "ignore" });
+  if (res.status !== 0) throw new Error(`tar extraction failed with status ${res.status}`);
+}
+
 if (process.env.CI) process.exit(0);
 
+const platform = `${process.platform}-${process.arch}`;
+const info = PLATFORMS[platform];
+if (!info) {
+  console.error(`Unsupported platform: ${platform}`);
+  process.exit(1);
+}
+
 const nativeDir = path.join(__dirname, "native");
-const binPath = path.join(nativeDir, "zbs");
+const binPath = path.join(nativeDir, info.bin);
 
 if (!fs.existsSync(binPath)) {
   const { version } = require("../package.json");
   if (version) {
-    const platform = `${process.platform}-${process.arch}`;
-    const info = PLATFORMS[platform];
-    if (!info) {
-      console.error(`Unsupported platform: ${platform}`);
-      process.exit(1);
-    }
-
     const { artifact, ext } = info;
     const url = `https://github.com/${REPO}/releases/download/v${version}/${artifact}${ext}`;
     console.info(`Downloading zbs v${version} for ${platform}...`);
@@ -56,10 +71,12 @@ if (!fs.existsSync(binPath)) {
 
     const tmp = path.join(nativeDir, `tmp${ext}`);
     fs.writeFileSync(tmp, data);
-    execSync(`tar xzf "${tmp}"`, { cwd: nativeDir });
+    extract(tmp, ext, nativeDir);
     fs.unlinkSync(tmp);
 
-    fs.chmodSync(binPath, 0o755);
+    if (process.platform !== "win32") {
+      fs.chmodSync(binPath, 0o755);
+    }
     console.info("Installed successfully.");
   }
 }
