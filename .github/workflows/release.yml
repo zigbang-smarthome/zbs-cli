@@ -43,6 +43,9 @@ jobs:
           - os: ubuntu-latest
             target: bun-linux-arm64
             name: zbs-linux-arm64
+          - os: windows-latest
+            target: bun-windows-x64
+            name: zbs-win32-x64
 
     steps:
       - uses: actions/checkout@v6
@@ -55,7 +58,9 @@ jobs:
         with:
           name: versioned-files
 
-      - name: Build binary
+      - name: Build binary (unix)
+        if: matrix.os != 'windows-latest'
+        shell: bash
         run: |
           bun build --compile --target=${{ matrix.target }} --outfile=zbs src/index.ts
           if [[ "${{ matrix.target }}" == bun-darwin-* ]]; then
@@ -64,10 +69,19 @@ jobs:
           fi
           tar czf ${{ matrix.name }}.tar.gz zbs
 
+      - name: Build binary (windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          bun build --compile --target=${{ matrix.target }} --outfile=zbs.exe src/index.ts
+          Compress-Archive -Path zbs.exe -DestinationPath ${{ matrix.name }}.zip
+
       - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.name }}
-          path: ${{ matrix.name }}.tar.gz
+          path: |
+            ${{ matrix.name }}.tar.gz
+            ${{ matrix.name }}.zip
 
   release:
     needs: [version, build]
@@ -86,6 +100,7 @@ jobs:
           generate_release_notes: true
           files: |
             artifacts/**/*.tar.gz
+            artifacts/**/*.zip
             bin/install.sh
 
   publish-npm:

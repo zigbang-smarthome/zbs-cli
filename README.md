@@ -70,7 +70,7 @@ zbs call /biz/managt/.../something.json --data '{"searchDtFrom":"2026-04-01"}'
 - **로그인:** username/password 모두 인터랙티브 프롬프트 (또는 `--id <ID>` / `$ZBS_LOGIN_ID` / `$ZBS_PASSWORD` env). 첫 로그인 후 cached.
 - **세션:** `~/.config/zbs/session.json` (mode 0600). JSESSIONID + ss\* 컨텍스트 + 캐시된 loginId.
 - **비밀번호:** `$ZBS_PASSWORD` env > macOS Keychain (service `zbs-cli`, account `<loginId>`).
-  파일 저장 안 함.
+  파일 저장 안 함. **Windows / Linux 에서는 Keychain 미지원 — `$ZBS_PASSWORD` env 를 사용하세요.**
 - **자동 재로그인:** 응답이 `noAuth` 거나 `/noAuth.json` 으로 리다이렉트되면, 캐시된 loginId + Keychain/env 비번으로 1회 재로그인 후 재시도.
 - **로그아웃:** `zbs logout` — 세션 파일 + Keychain 항목 삭제.
 
